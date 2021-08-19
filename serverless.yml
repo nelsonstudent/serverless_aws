@@ -1,0 +1,66 @@
+service: dio-live-serverless
+
+frameworkVersion: '2'
+
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  lambdaHashingVersion: '20201221'
+  region: us-east-1
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamoDB:PutItem
+            - dynamoDB:UpdateItem
+            - dynamoDB:GetItem
+            - dynamoDB:Scan
+          Resource:
+            - arn:aws:dynamodb:us-east-1:305539635317:table/ItemTableNew
+
+functions:
+  hello:
+    handler: src/handler.hello
+    events:
+      - http:
+          path: /
+          method: get
+  insertItem:
+    handler: src/insertItem.handler
+    events:
+      - http:
+          path: /item
+          method: post
+  fetchItems:
+     handler: src/fetchItems.handler
+     events:
+      - http:    
+          path: /items
+          method: get
+  fetchItem:
+     handler: src/fetchItem.handler
+     events:
+      - http:    
+          path: /items/{id}
+          method: get        
+  updateItem:
+    handler: src/updateItem.handler
+    events:
+      - http:
+          path: /item/{id}
+          method: put
+resources:
+  Resources:
+    ItemTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ItemTable
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
